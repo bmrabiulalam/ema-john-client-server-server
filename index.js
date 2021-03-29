@@ -57,6 +57,6 @@ client.connect(err => {
     })
 });
 
-app.listen(port, () => {
+app.listen(process.env.PORT || port, () => {
   console.log(`Ema-John App listening at http://localhost:${port}`)
 })
