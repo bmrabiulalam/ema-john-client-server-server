@@ -14,21 +14,46 @@ app.use(bodyParser.json());
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
-    const collection = client.db(process.env.DB_NAME).collection("products");
+    const productsCollection = client.db(process.env.DB_NAME).collection("products");
+    const ordersCollection = client.db(process.env.DB_NAME).collection("orders");
+
     console.log('DB Connected Successfully!');
 
     app.post('/addProduct', (req, res) => {
         const products = req.body;
-        // collection.insertOne(newProduct)
-        collection.insertMany(products)
-        .then(result => res.status(200).send(result.insertedCount.toString())); // send(status) if status is a numeric value then you will get an error
+        // productsCollection.insertOne(newProduct)
+        productsCollection.insertMany(products)
+        .then(result => res.status(200).send(result.insertedCount > 0 ? "Product Added Successfully!" : "Failed to Add Product!")); // send(status) if status is a numeric value then you will get an error
     })
 
     app.get('/products', (req, res) => {
-        collection.find({}).limit(20)
-        .then((err, documents) => {
+        productsCollection.find({})
+        .toArray((err, documents) => {
             res.status(200).send(documents);
         })
+    })
+
+    app.get('/product/:key', (req, res) => {
+        productsCollection.find({key: req.params.key})
+        .toArray((err, documents) => {
+            res.status(200).send(documents[0]);
+        })
+    })
+
+    app.post('/productsByKeys', (req, res) => {
+        const productKeys = req.body;
+        productsCollection.find({key: {$in: productKeys}})
+        .toArray((err, documents) => {
+            res.status(200).send(documents);
+        })
+    })
+
+    app.post('/addOrder', (req, res) => {
+        const orders = req.body;
+        ordersCollection.insertOne(orders)
+        .then(result => {
+            res.status(200).send(result.insertedCount > 0)
+        }); // send(status) if status is a numeric value then you will get an error
     })
 });
 
