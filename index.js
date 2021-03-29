@@ -19,6 +19,10 @@ client.connect(err => {
 
     console.log('DB Connected Successfully!');
 
+    app.get('/', (req, res) => {
+        res.send('Backend API Server Working Smoothly.');
+    })
+
     app.post('/addProduct', (req, res) => {
         const products = req.body;
         // productsCollection.insertOne(newProduct)
